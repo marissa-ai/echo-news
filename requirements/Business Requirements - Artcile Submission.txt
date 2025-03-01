@@ -1,0 +1,64 @@
+Business Requirements
+User Authentication and Roles:
+
+Only authenticated users can submit articles.
+Users can have roles (e.g., Administrator, Contributor, Viewer) to control permissions.
+Streamlined Submission Process:
+
+Provide an intuitive interface for article submission with clear instructions.
+Automatically fetch metadata (e.g., source name) from the provided article URL.
+Approval Workflow:
+
+Articles require approval by administrators before being listed publicly.
+Administrators can view, approve, or reject submissions in a dedicated portal.
+Audit and Compliance:
+
+Track all submissions with timestamps and submitter details.
+Ensure secure storage of user credentials and submissions.
+User Experience:
+
+Most users submitting articles will also have administrator privileges, simplifying the approval process.
+Functional Requirements
+Part 1: Collecting Information and Writing to the Database
+Article Submission Form:
+
+Fields: Login Name, Password, Title, Text, URL, Category, and Topic.
+URL field should trigger automatic lookup to fetch and display the source name.
+Dropdown menu for Category selection.
+Free-text input for Topic.
+Backend API for Submissions:
+
+Endpoint: /articles/submit (POST).
+Validates all fields and inserts the data into the articles table.
+If the URL metadata lookup fails, return an appropriate error.
+Database Schema Update:
+
+Add columns to the articles table: submitted_by, status (Pending, Approved, Rejected), category, topic, source.
+Part 2: User Login and Management
+Login Functionality:
+
+Users provide a Login Name and Password to submit articles.
+Validate login credentials against a users table.
+User Management:
+
+Add a users table with fields: user_id, login_name, password_hash, role.
+Passwords should be stored securely using hashing (e.g., bcrypt).
+Role-Based Access Control (RBAC):
+
+Administrator: Can submit, view, approve, and reject articles.
+Contributor: Can only submit articles.
+Viewer: Can only view approved articles.
+Part 3: Administrator Portal for Approvals
+Administrator Dashboard:
+
+Display a list of pending submissions with details like title, category, topic, and submitter name.
+Approve/Reject Submissions:
+
+Buttons for approving or rejecting articles.
+Approved articles are listed on the main page; rejected articles are archived.
+Notification System:
+
+Notify submitters of the status (approved/rejected) via a message or email.
+Audit Log:
+
+Record all actions (e.g., approvals, rejections) in an audit_log table with timestamps.

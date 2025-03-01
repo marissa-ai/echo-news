@@ -1,0 +1,22 @@
+.voting-section {
+  margin-top: 10px;
+}
+
+.vote-button {
+  padding: 5px 10px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.vote-button.upvote:hover {
+  background-color: #d4f0d4;
+}
+
+.vote-button.downvote:hover {
+  background-color: #f0d4d4;
+}
+

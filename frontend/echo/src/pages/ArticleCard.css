@@ -1,0 +1,36 @@
+.voting-section {
+  margin-top: 10px;
+}
+
+.vote-button {
+  padding: 5px 10px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.vote-button.upvote:hover {
+  background-color: #d4f0d4;
+}
+
+.vote-button.downvote:hover {
+  background-color: #f0d4d4;
+}
+
+/* Additional styling for trending articles */
+.trending-articles-section {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+.trending-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+

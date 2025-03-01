@@ -1,0 +1,39 @@
+.navbar {
+  background-color: #a3e4c5; /* Slightly darker mint green */
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 2px solid #90d3b1;
+}
+
+.navbar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.navbar ul li {
+  margin: 0; /* Remove margin around each list item */
+  padding: 0; /* Remove extra padding */
+}
+
+.navbar ul li a {
+  text-decoration: none;
+  color: white; /* Default font color is white */
+  font-weight: bold;
+  padding: 5px 10px;
+  transition: color 0.3s, background-color 0.3s;
+  background-color: #b8f5d6; /* Light mint green for button-like feel */
+  border-radius: 5px;
+}
+
+.navbar ul li a:hover {
+  background-color: #87c9a6; /* Slightly darker green on hover */
+  color: black; /* Black text on hover */
+}
+
+.navbar ul li a:visited {
+  display: none; /* Hide visited links */
+}
+

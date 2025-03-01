@@ -1,0 +1,49 @@
+.article-card {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.article-image {
+  max-width: 150px;
+  margin-right: 15px;
+  border-radius: 5px;
+}
+
+.article-content {
+  flex: 1;
+}
+
+.article-content h2 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.article-content a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.article-content a:hover {
+  text-decoration: underline;
+}
+
+.article-description {
+  color: #555;
+  margin: 5px 0;
+}
+
+small {
+  color: #888;
+}
+
