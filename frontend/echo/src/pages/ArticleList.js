@@ -11,7 +11,7 @@ const ArticleList = () => {
     const fetchArticles = async () => {
       try {
         const data = await ApiService.getArticles({ status: 'Approved' });
-        setArticles(data);
+        setArticles(data.articles || []);
         setError(null);
       } catch (err) {
         console.error('Error fetching articles:', err);
