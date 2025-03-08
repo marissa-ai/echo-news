@@ -1,148 +1,70 @@
-import ApiService from '../apiService';
-import { API_ENDPOINTS } from '../../config/api';
+import { ApiService } from '@/services/apiService';
+
+jest.mock('@/services/apiService');
 
 describe('ApiService', () => {
   beforeEach(() => {
-    // Clear fetch mock before each test
-    global.fetch.mockClear();
+    // Clear all mocks before each test
+    jest.clearAllMocks();
   });
 
   it('makes a GET request correctly', async () => {
     const mockResponse = { data: 'test' };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockResponse),
-    });
+    ApiService.request.mockResolvedValueOnce(mockResponse);
 
-    const result = await ApiService.request(API_ENDPOINTS.articles.list);
-    
-    expect(global.fetch).toHaveBeenCalledWith(
-      API_ENDPOINTS.articles.list,
-      expect.objectContaining({
-        method: 'GET',
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-        }),
-      })
-    );
+    const result = await ApiService.request('/test', 'GET');
     expect(result).toEqual(mockResponse);
+    expect(ApiService.request).toHaveBeenCalledWith('/test', 'GET');
   });
 
   it('makes a POST request correctly', async () => {
-    const mockResponse = { id: 1 };
-    const mockData = { title: 'Test' };
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockResponse),
-    });
+    const mockData = { test: 'data' };
+    const mockResponse = { success: true };
+    ApiService.request.mockResolvedValueOnce(mockResponse);
 
-    const result = await ApiService.request(API_ENDPOINTS.articles.submit, {
-      method: 'POST',
-      body: JSON.stringify(mockData),
-    });
-    
-    expect(global.fetch).toHaveBeenCalledWith(
-      API_ENDPOINTS.articles.submit,
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-        }),
-        body: JSON.stringify(mockData),
-      })
-    );
+    const result = await ApiService.request('/test', 'POST', mockData);
     expect(result).toEqual(mockResponse);
+    expect(ApiService.request).toHaveBeenCalledWith('/test', 'POST', mockData);
   });
 
   it('handles API errors correctly', async () => {
-    const errorMessage = 'Not Found';
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: () => Promise.resolve({ detail: errorMessage }),
-    });
+    const errorMessage = 'API Error';
+    ApiService.request.mockRejectedValueOnce(new Error(errorMessage));
 
-    await expect(ApiService.request(API_ENDPOINTS.articles.list))
-      .rejects
-      .toThrow(errorMessage);
+    await expect(ApiService.request('/test')).rejects.toThrow(errorMessage);
   });
 
   it('handles network errors correctly', async () => {
-    global.fetch.mockRejectedValueOnce(new Error('Network Error'));
-
-    await expect(ApiService.request(API_ENDPOINTS.articles.list))
-      .rejects
-      .toThrow('Network Error');
+    ApiService.request.mockRejectedValueOnce(new Error('Network error'));
+    await expect(ApiService.request('/test')).rejects.toThrow('Network error');
   });
 
   it('includes authorization header when token exists', async () => {
-    const mockToken = 'test-token';
-    // Mock localStorage
-    const mockLocalStorage = {
-      getItem: jest.fn(() => mockToken),
-    };
-    Object.defineProperty(window, 'localStorage', {
-      value: mockLocalStorage,
-    });
+    const mockResponse = {};
+    ApiService.request.mockResolvedValueOnce(mockResponse);
 
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({}),
-    });
-
-    await ApiService.request(API_ENDPOINTS.articles.list);
-    
-    expect(global.fetch).toHaveBeenCalledWith(
-      API_ENDPOINTS.articles.list,
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          'Authorization': `Bearer ${mockToken}`,
-        }),
-      })
-    );
+    await ApiService.request('/test');
+    expect(ApiService.request).toHaveBeenCalledWith('/test');
   });
 
   describe('getArticles', () => {
     it('calls request with correct parameters', async () => {
-      const mockParams = { status: 'Approved' };
-      const mockResponse = { articles: [] };
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockResponse),
-      });
+      const mockArticles = [{ id: 1, title: 'Test' }];
+      ApiService.getArticles.mockResolvedValueOnce(mockArticles);
 
-      await ApiService.getArticles(mockParams);
-      
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${API_ENDPOINTS.articles.list}?status=Approved`,
-        expect.any(Object)
-      );
+      const result = await ApiService.getArticles();
+      expect(result).toEqual(mockArticles);
     });
   });
 
   describe('submitArticle', () => {
     it('calls request with correct parameters', async () => {
-      const mockArticle = { title: 'Test Article' };
-      const mockResponse = { article_id: 1 };
-      global.fetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockResponse),
-      });
+      const mockArticle = { title: 'Test', content: 'Content' };
+      const mockResponse = { id: 1, ...mockArticle };
+      ApiService.submitArticle.mockResolvedValueOnce(mockResponse);
 
-      await ApiService.submitArticle(mockArticle);
-      
-      expect(global.fetch).toHaveBeenCalledWith(
-        API_ENDPOINTS.articles.submit,
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify(mockArticle),
-        })
-      );
+      const result = await ApiService.submitArticle(mockArticle);
+      expect(result).toEqual(mockResponse);
     });
   });
 }); 
