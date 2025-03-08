@@ -89,6 +89,9 @@ async def create_article(
             )
             category_id = cursor.fetchone()["category_id"]
         
+        # Convert HttpUrl to string if present
+        url_str = str(article.url) if article.url else None
+        
         # Insert article
         cursor.execute(
             """
@@ -101,7 +104,7 @@ async def create_article(
             (
                 article.title,
                 article.description,
-                article.url,
+                url_str,
                 category_id,
                 current_user["user_id"],
                 'pending'  # All articles start as pending for moderation
@@ -207,6 +210,7 @@ async def create_article(
     
     except Exception as e:
         db.rollback()
+        print(f"Error in create_article: {str(e)}")  # Add detailed error logging
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create article: {str(e)}"
@@ -220,6 +224,7 @@ async def get_articles(
     tag: Optional[str] = None,
     timeframe: Optional[str] = None,
     sort: str = "trending",
+    status: str = "approved",
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
     db = Depends(get_db)
@@ -244,89 +249,80 @@ async def get_articles(
         JOIN 
             users u ON a.submitted_by = u.user_id
         WHERE 
-            a.status = 'approved'
+            a.status = %s
         """
         count_query = """
         SELECT COUNT(*) as total
         FROM articles a
-        JOIN categories c ON a.category_id = c.category_id
-        WHERE a.status = 'approved'
+        WHERE a.status = %s
         """
-        
-        params = []
-        count_params = []
+        params = [status]
+        count_params = [status]
         
         # Add filters
         if category:
             query += " AND c.name = %s"
-            count_query += " AND c.name = %s"
+            count_query += " AND category_id IN (SELECT category_id FROM categories WHERE name = %s)"
             params.append(category)
             count_params.append(category)
         
         if tag:
             query += """
-            AND a.article_id IN (
-                SELECT at.article_id
-                FROM article_tags at
-                JOIN tags t ON at.tag_id = t.tag_id
-                WHERE t.name = %s
-            )
+                AND a.article_id IN (
+                    SELECT article_id 
+                    FROM article_tags at
+                    JOIN tags t ON at.tag_id = t.tag_id
+                    WHERE t.name = %s
+                )
             """
             count_query += """
-            AND a.article_id IN (
-                SELECT at.article_id
-                FROM article_tags at
-                JOIN tags t ON at.tag_id = t.tag_id
-                WHERE t.name = %s
-            )
+                AND article_id IN (
+                    SELECT article_id 
+                    FROM article_tags at
+                    JOIN tags t ON at.tag_id = t.tag_id
+                    WHERE t.name = %s
+                )
             """
             params.append(tag)
             count_params.append(tag)
         
         if timeframe:
-            time_filter = None
-            if timeframe == "day":
-                time_filter = "1 day"
+            if timeframe == "today":
+                query += " AND a.created_at >= CURRENT_DATE"
+                count_query += " AND created_at >= CURRENT_DATE"
             elif timeframe == "week":
-                time_filter = "1 week"
+                query += " AND a.created_at >= CURRENT_DATE - INTERVAL '7 days'"
+                count_query += " AND created_at >= CURRENT_DATE - INTERVAL '7 days'"
             elif timeframe == "month":
-                time_filter = "1 month"
-            
-            if time_filter:
-                query += " AND a.created_at > NOW() - INTERVAL %s"
-                count_query += " AND a.created_at > NOW() - INTERVAL %s"
-                params.append(time_filter)
-                count_params.append(time_filter)
+                query += " AND a.created_at >= CURRENT_DATE - INTERVAL '30 days'"
+                count_query += " AND created_at >= CURRENT_DATE - INTERVAL '30 days'"
         
         # Add sorting
         if sort == "trending":
             query += """
-            ORDER BY 
-                CASE WHEN a.is_featured THEN 1 ELSE 0 END DESC,
-                (a.upvotes - a.downvotes) / GREATEST(1, EXTRACT(EPOCH FROM (NOW() - a.created_at))/3600) DESC
+                ORDER BY 
+                    (a.upvotes - a.downvotes) DESC,
+                    a.views DESC,
+                    a.created_at DESC
             """
-        elif sort == "newest":
+        elif sort == "new":
             query += " ORDER BY a.created_at DESC"
-        elif sort == "most_voted":
+        elif sort == "top":
             query += " ORDER BY (a.upvotes - a.downvotes) DESC"
-        else:
-            query += " ORDER BY a.created_at DESC"  # Default sort
         
         # Add pagination
         query += " LIMIT %s OFFSET %s"
         params.extend([limit, (page - 1) * limit])
         
-        # Execute count query
+        # Get total count
         cursor.execute(count_query, count_params)
         total = cursor.fetchone()["total"]
         
-        # Execute main query
+        # Get articles
         cursor.execute(query, params)
-        articles = cursor.fetchall()
-        
-        # Get tags for each article
-        result_articles = []
-        for article in articles:
+        articles = []
+        for row in cursor.fetchall():
+            # Get tags for each article
             cursor.execute(
                 """
                 SELECT t.name
@@ -334,25 +330,30 @@ async def get_articles(
                 JOIN article_tags at ON t.tag_id = at.tag_id
                 WHERE at.article_id = %s
                 """,
-                (article["article_id"],)
+                (row["article_id"],)
             )
-            tags = [row["name"] for row in cursor.fetchall()]
+            tags = [tag["name"] for tag in cursor.fetchall()]
             
-            # Calculate score
-            score = article["upvotes"] - article["downvotes"]
-            
-            article_data = dict(article)
-            article_data["tags"] = tags
-            article_data["score"] = score
-            article_data["created_at"] = article["created_at"].isoformat()
-            
-            result_articles.append(article_data)
+            articles.append({
+                "article_id": row["article_id"],
+                "title": row["title"],
+                "description": row["description"],
+                "url": row["source_url"],
+                "category": row["category"],
+                "submitted_by": row["submitted_by"],
+                "created_at": row["created_at"].isoformat(),
+                "upvotes": row["upvotes"],
+                "downvotes": row["downvotes"],
+                "views": row["views"],
+                "is_featured": row["is_featured"],
+                "tags": tags
+            })
         
         return {
             "total": total,
             "page": page,
             "limit": limit,
-            "articles": result_articles
+            "articles": articles
         }
     
     except Exception as e:
@@ -379,7 +380,7 @@ async def get_article(
             """
             SELECT 
                 a.article_id, a.title, a.description, a.source_url, a.created_at, 
-                a.upvotes, a.downvotes, a.views,
+                a.upvotes, a.downvotes, a.views, a.status,
                 c.name as category,
                 u.username as submitted_by
             FROM 
@@ -389,7 +390,7 @@ async def get_article(
             JOIN 
                 users u ON a.submitted_by = u.user_id
             WHERE 
-                a.article_id = %s AND a.status = 'approved'
+                a.article_id = %s
             """,
             (article_id,)
         )

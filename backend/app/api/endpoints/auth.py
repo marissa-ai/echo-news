@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-from app.core.security import verify_password, get_password_hash, create_access_token
+from app.core.security import verify_password, get_password_hash, create_access_token, get_current_user
 from app.core.config import settings
 from app.db.session import get_db
 
@@ -80,9 +80,13 @@ async def register_user(user: UserCreate, db = Depends(get_db)):
             """
             INSERT INTO user_badges (user_id, badge_id)
             SELECT %s, badge_id FROM badges WHERE name = 'New Member'
+            RETURNING badge_id
             """,
             (new_user["user_id"],)
         )
+        badge = cursor.fetchone()
+        if not badge:
+            print(f"Warning: Could not find 'New Member' badge")
         
         # Log user activity
         cursor.execute(
@@ -106,13 +110,15 @@ async def register_user(user: UserCreate, db = Depends(get_db)):
         db.rollback()
         raise
     except Exception as e:
+        print(f"Error in register_user: {str(e)}")
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to register user: {str(e)}"
         )
     finally:
-        cursor.close()
+        if 'cursor' in locals():
+            cursor.close()
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db = Depends(get_db)):
@@ -178,6 +184,35 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db = Depends(g
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to login: {str(e)}"
         )
+    finally:
+        cursor.close()
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(current_user: dict = Depends(get_current_user), db = Depends(get_db)):
+    """Get current user information"""
+    try:
+        cursor = db.cursor(cursor_factory=RealDictCursor)
+        cursor.execute(
+            """
+            SELECT user_id, username, email, created_at
+            FROM users
+            WHERE user_id = %s
+            """,
+            (current_user["user_id"],)
+        )
+        user = cursor.fetchone()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        return {
+            "user_id": user["user_id"],
+            "username": user["username"],
+            "email": user["email"],
+            "created_at": user["created_at"].isoformat()
+        }
     finally:
         cursor.close()
 
