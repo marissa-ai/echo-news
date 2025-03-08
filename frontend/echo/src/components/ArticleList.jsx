@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ApiService } from '../services/apiService';
+import ApiService from '../services/apiService';
 
-const ArticleList = () => {
+export const ArticleList = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -49,7 +49,7 @@ const ArticleList = () => {
   }
 
   return (
-    <div className="grid-container">
+    <div className="grid-container" data-testid="article-list">
       {articles.map((article) => (
         <article key={article.id} className="card hover:shadow-md transition-shadow">
           <div className="space-y-4">

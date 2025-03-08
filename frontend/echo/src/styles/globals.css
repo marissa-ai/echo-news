@@ -3,19 +3,89 @@
 @tailwind utilities;
 
 :root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --secondary: #64748b;
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1f2937;
+  --muted: #9ca3af;
+  --accent: #f3f4f6;
+  --border: #e5e7eb;
+  --radius: 0.5rem;
+  --header-height: 4rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --secondary: #94a3b8;
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    --muted: #64748b;
+    --accent: #1e293b;
+    --border: #334155;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-[color:var(--border)];
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .container {
+    @apply mx-auto px-4 max-w-7xl;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-accent rounded-lg shadow-sm border p-6;
+  }
+
+  .button {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
+    disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .button-primary {
+    @apply bg-primary text-white hover:bg-primary-dark;
+  }
+
+  .button-secondary {
+    @apply bg-secondary text-white hover:bg-secondary/90;
+  }
+
+  .button-ghost {
+    @apply hover:bg-accent hover:text-foreground;
+  }
+}
+
+.grid-container {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.section {
+  @apply py-12;
+}
+
+.heading-1 {
+  @apply text-4xl font-bold tracking-tight;
+}
+
+.heading-2 {
+  @apply text-3xl font-semibold;
+}
+
+.heading-3 {
+  @apply text-2xl font-semibold;
+}
+
+.text-muted {
+  @apply text-muted;
 }

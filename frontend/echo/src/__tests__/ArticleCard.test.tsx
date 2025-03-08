@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ArticleCard } from '@/components/layout/ArticleCard';
+import { ArticleCard } from '../components/layout/ArticleCard';
 
 describe('ArticleCard', () => {
   const mockArticle = {
@@ -32,7 +32,7 @@ describe('ArticleCard', () => {
     render(<ArticleCard article={mockArticle} />);
     
     expect(screen.getByText('Technology')).toBeInTheDocument();
-    // Note: formatDate output will need to be mocked or matched appropriately
+    expect(screen.getByText('March 8, 2024')).toBeInTheDocument();
   });
 
   it('renders vote counts', () => {
@@ -40,5 +40,15 @@ describe('ArticleCard', () => {
     
     expect(screen.getByText('10')).toBeInTheDocument(); // upvotes
     expect(screen.getByText('2')).toBeInTheDocument(); // downvotes
+  });
+
+  it('renders article links correctly', () => {
+    render(<ArticleCard article={mockArticle} />);
+    
+    const titleLink = screen.getByRole('link', { name: 'Test Article' });
+    expect(titleLink).toHaveAttribute('href', '/article/1');
+
+    const authorLink = screen.getByRole('link', { name: 'Test Author' });
+    expect(authorLink).toHaveAttribute('href', '/user/Test Author');
   });
 }); 
