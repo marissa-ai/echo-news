@@ -10,7 +10,10 @@ class Settings(BaseSettings):
     PROJECT_DESCRIPTION: str = "API for Echo - Our Shareable News platform"
     
     # CORS settings
-    CORS_ORIGINS: List[str] = ["*"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",  # Next.js frontend
+        "http://127.0.0.1:3000",
+    ]
     
     # Security settings
     SECRET_KEY: str = os.getenv("SECRET_KEY", "supersecretkey")
