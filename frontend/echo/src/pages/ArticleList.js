@@ -1,29 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import ApiService from '../services/apiService';
 import ArticleCard from './ArticleCard';
 
 const ArticleList = () => {
   const [articles, setArticles] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get('http://localhost:5000/articles', {
-        params: { status: 'Approved' },
-      })
-      .then((response) => {
-        setArticles(response.data);
-      })
-      .catch((error) => {
-        console.error('Error fetching articles:', error);
-      });
+    const fetchArticles = async () => {
+      try {
+        const data = await ApiService.getArticles({ status: 'Approved' });
+        setArticles(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching articles:', err);
+        setError(err.message || 'Failed to fetch articles');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchArticles();
   }, []);
+
+  if (isLoading) {
+    return <div>Loading articles...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
 
   return (
     <div className="article-list">
       {articles.length === 0 ? (
         <p>No articles available.</p>
       ) : (
-        articles.map((article) => <ArticleCard key={article.article_id} article={article} />)
+        articles.map((article) => (
+          <ArticleCard key={article.article_id} article={article} />
+        ))
       )}
     </div>
   );

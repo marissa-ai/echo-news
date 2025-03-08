@@ -1,22 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import ApiService from '../services/apiService';
 import ArticleCard from './ArticleCard'; // Reuse ArticleCard component
 import './ArticleCard.css'; // Optional: Reuse existing styles
 
 const TrendingArticles = () => {
   const [trendingArticles, setTrendingArticles] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch trending articles from the backend
-    axios
-      .get('http://localhost:5000/articles/trending')
-      .then((response) => {
-        setTrendingArticles(response.data);
-      })
-      .catch((error) => {
-        console.error('Error fetching trending articles:', error);
-      });
+    const fetchTrendingArticles = async () => {
+      try {
+        const data = await ApiService.request(API_ENDPOINTS.articles.trending);
+        setTrendingArticles(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching trending articles:', err);
+        setError(err.message || 'Failed to fetch trending articles');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTrendingArticles();
   }, []);
+
+  if (isLoading) {
+    return <div>Loading trending articles...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
 
   return (
     <div className="trending-articles-section">

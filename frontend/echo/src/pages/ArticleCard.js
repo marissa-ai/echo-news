@@ -1,21 +1,22 @@
 import React from 'react';
 import './ArticleCard.css'; // Styling for the article card
-import axios from 'axios'; // For API calls
+import ApiService from '../services/apiService';
 
 const ArticleCard = ({ article }) => {
-  const handleVote = (voteType) => {
-    axios
-      .post('http://localhost:5000/articles/vote', {
-        article_id: article.article_id,
-        vote_type: voteType,
-      })
-      .then((response) => {
-        console.log(`${voteType} recorded successfully`);
-        // Optionally re-fetch articles to update vote counts
-      })
-      .catch((error) => {
-        console.error('Error recording vote:', error);
+  const handleVote = async (voteType) => {
+    try {
+      await ApiService.request(API_ENDPOINTS.articles.vote, {
+        method: 'POST',
+        body: JSON.stringify({
+          article_id: article.article_id,
+          vote_type: voteType,
+        }),
       });
+      console.log(`${voteType} recorded successfully`);
+      // Optionally re-fetch articles to update vote counts
+    } catch (error) {
+      console.error('Error recording vote:', error);
+    }
   };
 
   return (

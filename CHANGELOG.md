@@ -7,10 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Standardized API service usage across the application by replacing Axios with a custom ApiService
+- Updated all components to use the new ApiService:
+  - ArticleCard
+  - ArticleList
+  - Form
+  - Home
+  - TrendingArticle
+  - AdminPortal
+- Enhanced error handling and loading states in all components
+- Centralized API endpoint configuration in api.js
+- Added new API endpoints for trending, top, and top8 articles
+
+### Fixed
+- Fixed backend server startup issues with Python 3.13 compatibility
+- Resolved CORS configuration to allow frontend requests
+- Fixed email validation dependency issues
+- Improved error handling in API requests
+- Standardized API response handling across all components
+
 ### Added
-- Created new admin portal page at `/admin-portal` with basic structure and styling
-- Added API configuration file at `frontend/echo/src/config/api.js` to centralize API endpoint management
-- Added CORS configuration in backend to explicitly allow frontend origins
+- Created centralized API service (ApiService) for handling all API requests
+- Added loading states to improve user experience
+- Implemented consistent error handling across all components
+- Added new API endpoints configuration for better maintainability
+
+### Security
+- Improved token handling in API requests
+- Centralized authentication header management
+- Standardized error handling for API responses
+
+## [1.0.0] - 2024-03-08
+
+### Added
+- Initial release of the Echo News platform
+- Basic article management functionality
+- User authentication system
+- Admin portal for content moderation
+- Article submission form
+- Trending articles section
+- Voting system for articles
 
 ### Changed
 - Updated backend API URL from port 5000 to 8000 in frontend configuration
