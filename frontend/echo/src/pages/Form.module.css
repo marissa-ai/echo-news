@@ -1,5 +1,5 @@
 /* Styling the form container */
-.article-form {
+.formContainer {
   width: 100%;
   max-width: 500px;
   margin: 20px auto;
@@ -11,19 +11,28 @@
 }
 
 /* Styling the form title */
-.article-form h2 {
+.title {
   text-align: center;
   color: #333;
   margin-bottom: 20px;
 }
 
 /* Styling input fields and textarea */
-.article-form input,
-.article-form textarea,
-.article-form select {
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
   width: 100%;
   padding: 10px;
-  margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
@@ -31,13 +40,13 @@
 }
 
 /* Styling the textarea specifically */
-.article-form textarea {
+.formGroup textarea {
   min-height: 100px;
   resize: vertical;
 }
 
 /* Styling the submit button */
-.article-form button {
+.submitButton {
   width: 100%;
   padding: 10px;
   background-color: #4CAF50;
@@ -48,26 +57,26 @@
   cursor: pointer;
 }
 
-.article-form button:hover {
+.submitButton:hover {
   background-color: #45a049;
 }
 
 /* Styling error or success messages */
-.article-form p {
+.message {
   text-align: center;
   font-size: 14px;
   color: #d9534f; /* Default red for error messages */
+  margin-bottom: 15px;
 }
 
-.article-form p.success {
+.successMessage {
   color: #5cb85c; /* Green for success messages */
 }
 
 /* Responsive design for smaller screens */
 @media (max-width: 600px) {
-  .article-form {
+  .formContainer {
     width: 90%;
     padding: 15px;
   }
-}
-
+} 

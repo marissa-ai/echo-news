@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ApiService from '../services/apiService';
-import './Form.css'; // Ensure you have styles for the form
+import styles from './Form.module.css';
 
 const Form = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +14,7 @@ const Form = () => {
   });
 
   const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,6 +27,7 @@ const Form = () => {
     // Validate fields
     if (!formData.loginName || !formData.password || !formData.title || !formData.url || !formData.category || !formData.topic) {
       setMessage('All fields are required!');
+      setIsSuccess(false);
       return;
     }
 
@@ -41,6 +43,7 @@ const Form = () => {
       });
       
       setMessage('Article submitted successfully!');
+      setIsSuccess(true);
       setFormData({
         loginName: '',
         password: '',
@@ -53,15 +56,20 @@ const Form = () => {
     } catch (error) {
       console.error('Error submitting article:', error);
       setMessage('Failed to submit the article. Please try again.');
+      setIsSuccess(false);
     }
   };
 
   return (
-    <div className="form-container">
-      <h2>Submit Article</h2>
-      {message && <div className="message">{message}</div>}
+    <div className={styles.formContainer}>
+      <h2 className={styles.title}>Submit Article</h2>
+      {message && (
+        <div className={`${styles.message} ${isSuccess ? styles.successMessage : ''}`}>
+          {message}
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="loginName">Login Name:</label>
           <input
             type="text"
@@ -71,7 +79,7 @@ const Form = () => {
             onChange={handleChange}
           />
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="password">Password:</label>
           <input
             type="password"
@@ -81,7 +89,7 @@ const Form = () => {
             onChange={handleChange}
           />
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="title">Title:</label>
           <input
             type="text"
@@ -91,7 +99,7 @@ const Form = () => {
             onChange={handleChange}
           />
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="text">Text:</label>
           <textarea
             id="text"
@@ -100,7 +108,7 @@ const Form = () => {
             onChange={handleChange}
           />
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="url">URL:</label>
           <input
             type="url"
@@ -110,7 +118,7 @@ const Form = () => {
             onChange={handleChange}
           />
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="category">Category:</label>
           <input
             type="text"
@@ -120,7 +128,7 @@ const Form = () => {
             onChange={handleChange}
           />
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="topic">Topic:</label>
           <input
             type="text"
@@ -130,7 +138,9 @@ const Form = () => {
             onChange={handleChange}
           />
         </div>
-        <button type="submit">Submit Article</button>
+        <button type="submit" className={styles.submitButton}>
+          Submit Article
+        </button>
       </form>
     </div>
   );
